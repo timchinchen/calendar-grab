@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calendar Grab Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header class="panel">
+      <h1>Calendar Grab Dashboard</h1>
+      <p class="muted">Live and demo analytics for SC calendar activity.</p>
+      <span class="mode-badge {{ mode }}">{{ mode|upper }} MODE</span>
+    </header>
+
+    <section class="panel">
+      <form class="controls" method="get" action="{{ url_for('dashboard') }}">
+        <div class="field">
+          <label for="mode">Mode</label>
+          <select id="mode" name="mode">
+            <option value="demo" {% if mode == "demo" %}selected{% endif %}>Demo preview</option>
+            <option value="live" {% if mode == "live" %}selected{% endif %}>Live data</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="start_date">Start date</label>
+          <input id="start_date" name="start_date" type="date" value="{{ start_date }}">
+        </div>
+        <div class="field">
+          <label for="end_date">End date</label>
+          <input id="end_date" name="end_date" type="date" value="{{ end_date }}">
+        </div>
+        <div class="field">
+          <label for="scs">SC list (comma-separated)</label>
+          <input id="scs" name="scs" type="text" value="{{ sc_values }}">
+        </div>
+        <div class="field">
+          <label for="token_file">Token file (live mode)</label>
+          <input id="token_file" name="token_file" type="text" value="{{ token_file }}">
+        </div>
+        <div class="field">
+          <button type="submit">Refresh dashboard</button>
+        </div>
+      </form>
+      {% if load_error %}
+      <div class="error">
+        <strong>Live mode load failed.</strong> Showing demo data fallback.<br>
+        {{ load_error }}
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="summary-grid">
+      <article class="metric">
+        <div class="label">Total events</div>
+        <div class="value">{{ summary.event_count }}</div>
+      </article>
+      <article class="metric">
+        <div class="label">Total duration (min)</div>
+        <div class="value">{{ summary.duration_minutes }}</div>
+      </article>
+      <article class="metric">
+        <div class="label">Total duration (hours)</div>
+        <div class="value">{{ summary.duration_hours }}</div>
+      </article>
+      <article class="metric">
+        <div class="label">SC count</div>
+        <div class="value">{{ summary.sc_count }}</div>
+      </article>
+      <article class="metric">
+        <div class="label">Top team</div>
+        <div class="value">
+          {{ top_team }}
+        </div>
+      </article>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <h3>Events by team</h3>
+        <table>
+          <thead>
+            <tr><th>Team</th><th>Events</th><th>Minutes</th></tr>
+          </thead>
+          <tbody>
+            {% for team, stats in summary.by_team.items() %}
+            <tr>
+              <td>{{ team }}</td>
+              <td>{{ stats.event_count }}</td>
+              <td>{{ stats.duration_minutes }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+
+      <article class="panel">
+        <h3>Events by type</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Events</th><th>Minutes</th></tr>
+          </thead>
+          <tbody>
+            {% for event_type, stats in summary.by_event_type.items() %}
+            <tr>
+              <td>{{ event_type }}</td>
+              <td>{{ stats.event_count }}</td>
+              <td>{{ stats.duration_minutes }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h3>Recent events (max 250 rows)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>SC</th>
+            <th>Team</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Duration</th>
+            <th>Customer</th>
+            <th>Location</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in rows %}
+          <tr>
+            <td>{{ e.date }}</td>
+            <td>{{ e.time }}</td>
+            <td>{{ e.sc_name }}</td>
+            <td>{{ e.team }}</td>
+            <td>{{ e.account }}</td>
+            <td>{{ e.event_type }}</td>
+            <td>{{ e.duration_minutes }}</td>
+            <td>{{ e.customer_attended }}</td>
+            <td>{{ e.location }}</td>
+            <td>{{ e.summary }}</td>
+          </tr>
+          {% endfor %}
+          {% if not rows %}
+          <tr>
+            <td colspan="10" class="muted">No events found for current filters.</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
