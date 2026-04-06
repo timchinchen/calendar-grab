@@ -4,7 +4,7 @@ Calendar reporting utilities plus a web dashboard for live and demo data.
 
 ## What this project does
 
-- Pulls calendar events from PagerDuty user calendars via the Google Calendar API
+- Pulls calendar events from user calendars via the Google Calendar API
 - Classifies meetings (customer-facing and internal)
 - Exports report files for analysis
 - Serves a web dashboard to view report metrics in:
